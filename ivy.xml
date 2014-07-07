@@ -6,7 +6,7 @@
 		<conf name="test" extends="default"/>
 	</configurations>
 	<dependencies>
-		<dependency org="org.kairosdb" name="kairosdb" rev="0.9.4-SNAPSHOT" />
+		<dependency org="org.kairosdb" name="kairosdb" rev="0.9.4" />
 		<!--<dependency org="com.sun.jersey" name="jersey-servlet" rev="1.15" transitive="false"/>-->
 
 		<!--<dependency org="org.spark-project" name="pyrolite" rev="2.0.1" />-->
