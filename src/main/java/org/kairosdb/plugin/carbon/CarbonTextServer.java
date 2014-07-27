@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 
 /**
@@ -37,6 +39,7 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 	public static final Logger logger = LoggerFactory.getLogger(CarbonTextServer.class);
 
 	private final int m_port;
+	private InetAddress m_address;
 	private final KairosDatastore m_datastore;
 	private final TagParser m_tagParser;
 	private ServerBootstrap m_serverBootstrap;
@@ -47,13 +50,29 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 	@Inject
 	private DoubleDataPointFactory m_doubleDataPointFactory = new DoubleDataPointFactoryImpl();
 
-	@Inject
 	public CarbonTextServer(KairosDatastore datastore,
 			TagParser tagParser, @Named("kairosdb.carbon.text.port") int port)
+	{
+		this(datastore, tagParser, port, null);
+	}
+
+	@Inject
+	public CarbonTextServer(KairosDatastore datastore,
+			TagParser tagParser, @Named("kairosdb.carbon.text.port") int port,
+			@Named("kairosdb.carbon.text.address") String address)
 	{
 		m_port = port;
 		m_datastore = datastore;
 		m_tagParser = tagParser;
+    	m_address = null;
+        try
+        {
+            m_address = InetAddress.getByName(address);
+        }
+        catch (UnknownHostException e)
+        {
+			logger.error("Unknown host name " + address + ", will bind to 0.0.0.0");
+        }
 	}
 
 	@Override
@@ -156,7 +175,7 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 		m_serverBootstrap.setOption("reuseAddress", true);
 
 		// Bind and start to accept incoming connections.
-		m_serverBootstrap.bind(new InetSocketAddress(m_port));
+		m_serverBootstrap.bind(new InetSocketAddress(m_address, m_port));
 	}
 
 	@Override
