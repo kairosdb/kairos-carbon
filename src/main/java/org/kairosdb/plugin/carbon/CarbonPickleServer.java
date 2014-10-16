@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -42,6 +44,8 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	@Named("kairosdb.carbon.pickle.port")
 	private int m_port = 2004;
 
+	private InetAddress m_address;
+
 	@Inject
 	@Named("kairosdb.carbon.pickle.max_size")
 	private int m_maxSize = 2048;
@@ -50,11 +54,26 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	private final TagParser m_tagParser;
 	private ServerBootstrap m_serverBootstrap;
 
-	@Inject
 	public CarbonPickleServer(KairosDatastore datastore, TagParser tagParser)
+	{
+		this(datastore, tagParser, null);
+	}
+
+	@Inject
+	public CarbonPickleServer(KairosDatastore datastore, TagParser tagParser,
+		@Named("kairosdb.carbon.pickle.address") String address)
 	{
 		m_datastore = datastore;
 		m_tagParser = tagParser;
+    	m_address = null;
+        try
+        {
+            m_address = InetAddress.getByName(address);
+        }
+        catch (UnknownHostException e)
+        {
+			logger.error("Unknown host name " + address + ", will bind to 0.0.0.0");
+        }
 	}
 
 	@Override
@@ -131,7 +150,7 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 		m_serverBootstrap.setOption("reuseAddress", true);
 
 		// Bind and start to accept incoming connections.
-		m_serverBootstrap.bind(new InetSocketAddress(m_port));
+		m_serverBootstrap.bind(new InetSocketAddress(m_address, m_port));
 	}
 
 	@Override
