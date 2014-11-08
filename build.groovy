@@ -3,8 +3,8 @@ import org.freecompany.redline.header.Architecture
 import org.freecompany.redline.header.Os
 import org.freecompany.redline.header.RpmType
 import org.freecompany.redline.payload.Directive
-import org.vafer.jdeb.DebMaker
-import org.vafer.jdeb.StdOutConsole
+//import org.vafer.jdeb.DebMaker
+//import org.vafer.jdeb.StdOutConsole
 import tablesaw.AbstractFileSet
 import tablesaw.RegExFileSet
 import tablesaw.SimpleFileSet
