@@ -64,15 +64,15 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 		m_port = port;
 		m_datastore = datastore;
 		m_tagParser = tagParser;
-    	m_address = null;
-        try
-        {
-            m_address = InetAddress.getByName(address);
-        }
-        catch (UnknownHostException e)
-        {
+		m_address = null;
+		try
+		{
+			m_address = InetAddress.getByName(address);
+		}
+		catch (UnknownHostException e)
+		{
 			logger.error("Unknown host name " + address + ", will bind to 0.0.0.0");
-        }
+		}
 	}
 
 	@Override

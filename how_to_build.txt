@@ -14,3 +14,6 @@ You can also get help on what targets are available by typing
 
 Then, you will need to move the jar created to the right folder so that KairosDB will load it
 > cp build/jar/kairos-carbon-1.0.jar /opt/kairosdb/lib/
+
+Now copy the properties file
+> cp src/main/resources/kairos-carbon.properties /opt/kairosdb/conf
