@@ -1,4 +1,4 @@
-Building requires JDK 1.6 or later.
+Building requires JDK 1.6.
 
 To build set your classpath to the tablesaw jar file like so:
 >export CLASSPATH=tools/tablesaw-1.2.0.jar
@@ -11,3 +11,6 @@ downloaded.  After this you will need to build again.
 
 You can also get help on what targets are available by typing
 >java make help
+
+Then, you will need to move the jar created to the right folder so that KairosDB will load it
+> cp build/jar/kairos-carbon-1.0.jar /opt/kairosdb/lib/
