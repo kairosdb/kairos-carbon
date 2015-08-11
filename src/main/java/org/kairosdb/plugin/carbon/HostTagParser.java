@@ -54,6 +54,7 @@ public class HostTagParser implements TagParser
 			return (null);
 
 		ret.addTag("host", hostMatcher.replaceAll(m_hostReplacement));
+		ret.addTag("type", "graphite");
 
 		return (ret);
 	}
