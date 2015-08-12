@@ -28,10 +28,11 @@ public class HostTagParser implements TagParser
 
 	@Inject
 	public HostTagParser(
-			@Named(HOST_PATTERN_PROP)String hostPattern,
-			@Named(HOST_REPLACEMENT_PROP)String hostReplacement,
-			@Named(METRIC_PATTERN_PROP)String metricPattern,
-			@Named(METRIC_REPLACEMENT_PROP)String metricReplacement)
+		@Named(HOST_PATTERN_PROP)String hostPattern,
+		@Named(HOST_REPLACEMENT_PROP)String hostReplacement,
+		@Named(METRIC_PATTERN_PROP)String metricPattern,
+		@Named(METRIC_REPLACEMENT_PROP)String metricReplacement//,
+	)
 	{
 		m_hostPattern = Pattern.compile(hostPattern);
 		m_hostReplacement = hostReplacement;
@@ -40,22 +41,36 @@ public class HostTagParser implements TagParser
 	}
 
 	@Override
-	public CarbonMetric parseMetricName(String metricName)
-	{
+	public CarbonMetric parseMetricName(String metricName) {
+
+		String metric;
+		String[] splited = metricName.split("\\.");
+		int prefixLength = 5;
+		int metricLength = splited.length;
 
 		Matcher metricMatcher = m_metricPattern.matcher(metricName);
-		if (!metricMatcher.matches())
-			return (null);
 
-		CarbonMetric ret = new CarbonMetric(metricMatcher.replaceAll(m_metricReplacement));
+		if (metricMatcher.matches())
+			metric = metricMatcher.replaceAll(m_metricReplacement);
+		else
+			metric = splited[metricLength - 1];
 
-		Matcher hostMatcher = m_hostPattern.matcher(metricName);
-		if (!hostMatcher.matches())
-			return (null);
+		CarbonMetric ret = new CarbonMetric(metric);
 
-		ret.addTag("host", hostMatcher.replaceAll(m_hostReplacement));
 		ret.addTag("type", "graphite");
 
-		return (ret);
+		Matcher hostMatcher = m_hostPattern.matcher(metricName);
+
+		if (hostMatcher.matches())
+			ret.addTag("host", hostMatcher.replaceAll(m_hostReplacement));
+
+		for ( int i = 0; i < metricLength - 1; i++ ) {
+			if ( splited[i].equals("hosts") )
+				break;
+			ret.addTag("tag" + i, splited[i]);
+		}
+
+		return ret;
+
 	}
 }
