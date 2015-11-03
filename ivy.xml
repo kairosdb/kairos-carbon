@@ -1,12 +1,13 @@
 
 <ivy-module version="2.0">
 	<info organisation="kairosd.org" module="kairos-carbon"/>
-	<configurations defaultconf="default" defaultconfmapping="default->*;test->*" >
+	<configurations defaultconf="default" defaultconfmapping="default->*;test->*;provided->*" >
 		<conf name="default"/>
-		<conf name="test" extends="default"/>
+		<conf name="test" extends="provided"/>
+		<conf name="provided" extends="default"/>
 	</configurations>
 	<dependencies>
-		<dependency org="org.kairosdb" name="kairosdb" rev="0.9.4-5" />
+		<dependency org="org.kairosdb" name="kairosdb" rev="0.9.4-5" conf="provided->default" />
 		<!--<dependency org="com.sun.jersey" name="jersey-servlet" rev="1.15" transitive="false"/>-->
 
 		<!--<dependency org="org.spark-project" name="pyrolite" rev="2.0.1" />-->

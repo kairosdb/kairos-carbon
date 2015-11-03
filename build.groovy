@@ -49,7 +49,7 @@ saw.setProperty(PomRule.URL_PROPERTY, "http://kairosdb.org")
 saw = Tablesaw.getCurrentTablesaw()
 saw.includeDefinitionFile("definitions.xml")
 
-ivyConfig = ["default", "test"]
+ivyConfig = ["provided", "test"]
 
 rpmDir = "build/rpm"
 rpmNoDepDir = "build/rpm-nodep"
@@ -72,7 +72,7 @@ jp = new JavaProgram()
 		.setup()
 
 jc = jp.getCompileRule()
-jc.addDepend(ivy.getResolveRule("default"))
+jc.addDepend(ivy.getResolveRule("provided"))
 
 jc.getDefinition().set("target", "1.6")
 jc.getDefinition().set("source", "1.6")
@@ -212,7 +212,7 @@ gzipRule = new GZipRule("package").setSource(tarRule.getTarget())
 
 //------------------------------------------------------------------------------
 //Build rpm file
-rpmBaseInstallDir = "/opt/$programName"
+rpmBaseInstallDir = "/opt/kairosdb"
 rpmRule = new SimpleRule("package-rpm").setDescription("Build RPM Package")
 		.addDepend(jp.getJarRule())
 		.addDepend(resolveIvyFileSetRule)
@@ -250,7 +250,6 @@ def doRPM(Rule rule)
 	for (AbstractFileSet fs in libFileSets)
 		addFileSetToRPM(rpmBuilder, "$rpmBaseInstallDir/lib", fs)
 
-	addFileSetToRPM(rpmBuilder, "$rpmBaseInstallDir/bin", scriptsFileSet)
 
 	rpmBuilder.addFile("$rpmBaseInstallDir/conf/kairos-carbon.properties",
 			new File("src/main/resources/kairos-carbon.properties"), 0644, new Directive(Directive.RPMFILE_CONFIG | Directive.RPMFILE_NOREPLACE))
