@@ -1,5 +1,6 @@
 kairos-carbon
 =============
+[![Build Status](https://travis-ci.org/kairosdb/kairos-carbon.svg?branch=master)](https://travis-ci.org/kairosdb/kairos-carbon)
 
 KairosDB plugin for the carbon protocol
 
