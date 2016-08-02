@@ -1,0 +1,12 @@
+---
+
+language: java
+
+jdk:
+  - oraclejdk8
+
+before_script:
+  - export CLASSPATH=tools/tablesaw-1.2.0.jar
+
+script:
+  - java make clean junit-test

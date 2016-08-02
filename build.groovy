@@ -31,8 +31,8 @@ saw.setProperty(Tablesaw.PROP_MULTI_THREAD_OUTPUT, Tablesaw.PROP_VALUE_ON)
 
 programName = "kairos-carbon"
 //Do not use '-' in version string, it breaks rpm uninstall.
-version = "1.0"
-kairos_version = "0.9.4"
+version = "1.1"
+kairos_version = "1.1.1"
 release = "1" //package release number
 summary = "Kairos-carbon"
 description = """\
@@ -74,8 +74,8 @@ jp = new JavaProgram()
 jc = jp.getCompileRule()
 jc.addDepend(ivy.getResolveRule("provided"))
 
-jc.getDefinition().set("target", "1.6")
-jc.getDefinition().set("source", "1.6")
+jc.getDefinition().set("target", "1.8")
+jc.getDefinition().set("source", "1.8")
 
 jp.getJarRule().addFiles("src/main/resources", "kairos-carbon.properties")
 

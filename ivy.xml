@@ -7,10 +7,10 @@
 		<conf name="provided" extends="default"/>
 	</configurations>
 	<dependencies>
-		<dependency org="org.kairosdb" name="kairosdb" rev="0.9.4-5" conf="provided->default" />
+		<dependency org="org.kairosdb" name="kairosdb" rev="1.1.1-1" conf="provided->default" />
 		<!--<dependency org="com.sun.jersey" name="jersey-servlet" rev="1.15" transitive="false"/>-->
 
-		<!--<dependency org="org.spark-project" name="pyrolite" rev="2.0.1" />-->
+		<!--<dependency org="net.razorvine" name="pyrolite" rev="4.12" />-->
 
 		<dependency org="junit" name="junit" rev="4.11" conf="test->default" />
 		<dependency org="org.mockito" name="mockito-core" rev="1.9.5" conf="test->default"/>

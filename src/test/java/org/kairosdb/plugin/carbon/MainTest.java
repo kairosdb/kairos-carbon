@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.kairosdb.core.Main;
 import org.kairosdb.core.exception.KairosDBException;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -14,7 +15,7 @@ public class MainTest
 	@Test
 	public void runMainTest() throws IOException, KairosDBException, InterruptedException
 	{
-		Main main = new Main(null);
+		Main main = new Main(new File("src/test/resources/kairos-carbon-test.properties"));
 		main.startServices();
 
 
