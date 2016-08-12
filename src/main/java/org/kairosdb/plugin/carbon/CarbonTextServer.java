@@ -126,7 +126,7 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 				else
 					dp = m_longDataPointFactory.createDataPoint(timestamp, Long.parseLong(msgArr[1]));
 
-				m_datastore.putDataPoint(carbonMetric.getName(), carbonMetric.getTags(), dp);
+				m_datastore.putDataPoint(carbonMetric.getName(), carbonMetric.getTags(), dp, carbonMetric.getTtl());
 			}
 			catch (Exception e)
 			{

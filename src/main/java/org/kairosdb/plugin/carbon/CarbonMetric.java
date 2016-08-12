@@ -14,6 +14,7 @@ public class CarbonMetric
 {
 	private String m_name;
 	private ImmutableSortedMap.Builder<String, String> m_tags;
+	private int ttl;
 
 	public CarbonMetric(String name)
 	{
@@ -26,6 +27,11 @@ public class CarbonMetric
 		m_tags.put(tag, value);
 	}
 
+	public void setTtl(int ttlValue)
+	{
+		ttl = ttlValue;
+	}
+
 	public String getName()
 	{
 		return m_name;
@@ -35,4 +41,11 @@ public class CarbonMetric
 	{
 		return m_tags.build();
 	}
+
+	public int getTtl()
+	{
+		return ttl;
+	}
+
+
 }
