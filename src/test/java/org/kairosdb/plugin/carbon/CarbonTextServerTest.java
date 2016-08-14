@@ -84,7 +84,7 @@ public class CarbonTextServerTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234), 0);
 	}
 
 	@Test
@@ -100,6 +100,6 @@ public class CarbonTextServerTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
-						new DoubleDataPoint(now * 1000, 12.34));
+						new DoubleDataPoint(now * 1000, 12.34),0);
 	}
 }
