@@ -47,37 +47,27 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 		{
 
 			i++;
-			System.out.println("i = " + i);
 			if(i%2 == 0){
 				i =0 ;
 				return ;
 			}
 
-			if (m_firstTuple)
-			{
-
-				m_firstTuple = true;
-				//Pop three items from stack
-				Object value = stack.pop();
-				long time = ((Number)stack.pop()).longValue();
-				stack.pop();
-				String path = /*(String)*/stack.pop().toString();
+			//Pop three items from stack
+			Object value = stack.pop();
+			long time = ((Number)stack.pop()).longValue();
+			stack.pop();
+			String path = stack.pop().toString();
 
 
-				PickleMetric metric;
-				if (/*value instanceof Double*/ value.toString().contains(".")){
-					metric = new PickleMetric(path, time, Double.parseDouble(value.toString()));
-				}
-				else{
-					metric = new PickleMetric(path, time, Long.parseLong(value.toString()));
-				}
-
-				stack.add(metric);
-
+			PickleMetric metric;
+			if (value.toString().contains(".")){
+				metric = new PickleMetric(path, time, Double.parseDouble(value.toString()));
 			}
 			else{
-				m_firstTuple = false;
+				metric = new PickleMetric(path, time, Long.parseLong(value.toString()));
 			}
+
+			stack.add(metric);
 
 			is_tuple = true;
 		}
@@ -88,7 +78,6 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 
 			@SuppressWarnings("unchecked")
 			ArrayList<Object> list = (ArrayList<Object>) stack.peek();
-
 			list.add(value);
 
 		}
