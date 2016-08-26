@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class Unpickler extends net.razorvine.pickle.Unpickler
 {
 	private boolean m_firstTuple = true;
-	static int i=0;
+	private int i=0;
 	private boolean is_tuple = false;
 
 	@Override
@@ -46,6 +46,7 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 		else if ((key == Opcodes.TUPLE))
 		{
 
+			// Skip the first tuple key
 			i++;
 			if(i%2 == 0){
 				i =0 ;
@@ -61,9 +62,11 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 
 			PickleMetric metric;
 			if (value.toString().contains(".")){
+				// Store the value as Double
 				metric = new PickleMetric(path, time, Double.parseDouble(value.toString()));
 			}
 			else{
+				// Store the value as Long
 				metric = new PickleMetric(path, time, Long.parseLong(value.toString()));
 			}
 
@@ -72,6 +75,7 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 			is_tuple = true;
 		}
 		else if(key == Opcodes.APPEND && is_tuple){
+			// Append code for tuples
 			is_tuple = false;
 			Object value = stack.pop();
 			stack.pop();
