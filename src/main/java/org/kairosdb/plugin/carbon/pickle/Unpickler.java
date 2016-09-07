@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class Unpickler extends net.razorvine.pickle.Unpickler
 {
 	private boolean m_firstTuple = true;
-	private int i=0;
+	private int tupleOpcodeCounter=0;
 	private boolean is_tuple = false;
 
 	@Override
@@ -47,9 +47,9 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 		{
 
 			// Skip the first tuple key
-			i++;
-			if(i%2 == 0){
-				i =0 ;
+			tupleOpcodeCounter++;
+			if(tupleOpcodeCounter%2 == 0){
+				tupleOpcodeCounter =0 ;
 				return ;
 			}
 
