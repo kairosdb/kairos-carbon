@@ -46,7 +46,7 @@ public class MultiTagParser implements TagParser {
             @Named(MULTI_PATTERN_PROP)String multiPatterns,
             @Named(MULTI_REPLACEMENT_PROP)String multiReplacements,
             @Named(MULTI_TAGS)String multiTags,
-            @Named(TAGS_CASE)String tags_case,
+            @Named(TAGS_CASE)String tagsCase,
             @Named(METRIC_PATTERN_PROP)String metricPattern,
             @Named(METRIC_REPLACEMENT_PROP)String metricReplacement,
             @Named(METRIC_INVALID_TTL)int invalidTtlValue,
@@ -70,10 +70,10 @@ public class MultiTagParser implements TagParser {
         ttl = ttlValue;
 
 
-        if (tags_case.equalsIgnoreCase("upper")){
+        if (tagsCase.equalsIgnoreCase("upper")){
             m_tags_case = 1;
         }
-        else if (tags_case.equalsIgnoreCase("lower")){
+        else if (tagsCase.equalsIgnoreCase("lower")){
             m_tags_case = 2;
         }
     }
