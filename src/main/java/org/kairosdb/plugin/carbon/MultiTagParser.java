@@ -15,17 +15,17 @@ import java.util.regex.Pattern;
  * Created by vkrish2 on 8/12/16.
  */
 public class MultiTagParser implements TagParser {
-    public static final String MULTI_PATTERN_PROP = "kairosdb.carbon.multitagparser.patterns";
-    public static final String MULTI_REPLACEMENT_PROP = "kairosdb.carbon.multitagparser.replacements";
-    public static final String MULTI_TAGS = "kairosdb.carbon.multitagparser.tags";
+    private static final String MULTI_PATTERN_PROP = "kairosdb.carbon.multitagparser.patterns";
+    private static final String MULTI_REPLACEMENT_PROP = "kairosdb.carbon.multitagparser.replacements";
+    private static final String MULTI_TAGS = "kairosdb.carbon.multitagparser.tags";
 
-    public static final String METRIC_PATTERN_PROP = "kairosdb.carbon.multitagparser.metric_pattern";
-    public static final String METRIC_REPLACEMENT_PROP = "kairosdb.carbon.multitagparser.metric_replacement";
+    private static final String METRIC_PATTERN_PROP = "kairosdb.carbon.multitagparser.metric_pattern";
+    private static final String METRIC_REPLACEMENT_PROP = "kairosdb.carbon.multitagparser.metric_replacement";
 
-    public static final String TAGS_CASE = "kairosdb.carbon.multitagparser.tagscase";
+    private static final String TAGS_CASE = "kairosdb.carbon.multitagparser.tagscase";
 
-    public static final String METRIC_TTL = "kairosdb.carbon.ttl";
-    public static final String METRIC_INVALID_TTL = "kairosdb.carbon.invalidTtl";
+    private static final String METRIC_TTL = "kairosdb.carbon.ttl";
+    private static final String METRIC_INVALID_TTL = "kairosdb.carbon.invalidTtl";
 
 
     private List<Pattern> m_pattern_list = new ArrayList<Pattern>();
