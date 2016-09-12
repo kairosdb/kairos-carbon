@@ -41,6 +41,7 @@ import static org.mockito.Mockito.*;
 public class CarbonPickleServerTest
 {
 	private final static int CARBON_PORT = 2004;
+	private final int ZERO_TTL = 0;
 
 	private KairosDatastore m_datastore;
 	private CarbonPickleServer m_server;
@@ -82,7 +83,7 @@ public class CarbonPickleServerTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234),ZERO_TTL);
 	}
 
 	@Test
@@ -98,6 +99,6 @@ public class CarbonPickleServerTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
-						new DoubleDataPoint(now * 1000, 12.34));
+						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL);
 	}
 }
