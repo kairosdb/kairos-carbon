@@ -102,4 +102,34 @@ public class CarbonTextServerTest
 				.putDataPoint("test.metric_name", tags,
 						new DoubleDataPoint(now * 1000, 12.34));
 	}
+	
+	@Test
+	public void test_putDataPoints_notANumber() throws DatastoreException, InterruptedException
+	{
+	    long now = System.currentTimeMillis() / 1000;
+
+	    m_client.sendText("test.host_name.metric_name", now, "NaN");
+
+	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	}
+
+	@Test
+	public void test_putDataPoints_infinity() throws DatastoreException, InterruptedException
+	{
+	    long now = System.currentTimeMillis() / 1000;
+
+	    m_client.sendText("test.host_name.metric_name", now, "Infinity");
+
+	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	}
+
+	@Test
+	public void test_putDataPoints_negativeInfinity() throws DatastoreException, InterruptedException
+	{
+	    long now = System.currentTimeMillis() / 1000;
+
+	    m_client.sendText("test.host_name.metric_name", now, "-Infinity");
+
+	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	}
 }
