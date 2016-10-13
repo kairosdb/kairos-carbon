@@ -1,8 +1,11 @@
+
 package org.kairosdb.plugin.carbon.pickle;
 
 import net.razorvine.pickle.Opcodes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
 
 /**
  Created with IntelliJ IDEA.
@@ -14,6 +17,8 @@ import java.io.IOException;
 public class Unpickler extends net.razorvine.pickle.Unpickler
 {
 	private boolean m_firstTuple = true;
+	private int tupleOpcodeCounter=0;
+	private boolean is_tuple = false;
 
 	@Override
 	protected void dispatch(short key) throws IOException
@@ -38,6 +43,48 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 			}
 			else
 				m_firstTuple = false;
+		}
+		else if ((key == Opcodes.TUPLE))
+		{
+
+			// Skip the first tuple key
+			tupleOpcodeCounter++;
+			if(tupleOpcodeCounter%2 == 0){
+				tupleOpcodeCounter =0 ;
+				return ;
+			}
+
+			//Pop three items from stack
+			Object value = stack.pop();
+			long time = ((Number)stack.pop()).longValue();
+			stack.pop();
+			String path = stack.pop().toString();
+
+
+			PickleMetric metric;
+			if (value.toString().contains(".")){
+				// Store the value as Double
+				metric = new PickleMetric(path, time, Double.parseDouble(value.toString()));
+			}
+			else{
+				// Store the value as Long
+				metric = new PickleMetric(path, time, Long.parseLong(value.toString()));
+			}
+
+			stack.add(metric);
+
+			is_tuple = true;
+		}
+		else if(key == Opcodes.APPEND && is_tuple){
+			// Append code for tuples
+			is_tuple = false;
+			Object value = stack.pop();
+			stack.pop();
+
+			@SuppressWarnings("unchecked")
+			ArrayList<Object> list = (ArrayList<Object>) stack.peek();
+			list.add(value);
+
 		}
 		else
 			super.dispatch(key);
