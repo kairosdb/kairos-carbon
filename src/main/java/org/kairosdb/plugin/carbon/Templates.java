@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 public class Templates
 {
   public static final Logger logger = LoggerFactory.getLogger(Templates.class);
-
-	private static List<String> unknownMetrics = new ArrayList<String>();
 	private static List<Template> templates = new ArrayList<Template>();
 
 	public static void parse(String templates) {
@@ -58,10 +56,6 @@ public class Templates
 			if (template.matches(metricName)) {
 				return template;
 			}
-		}
-		if (!unknownMetrics.contains(metricName)) {
-			logger.warn("No template found for metric: {}", metricName);
-			unknownMetrics.add(metricName);
 		}
 		return null;
 	}

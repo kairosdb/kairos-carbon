@@ -8,24 +8,54 @@ import java.util.Arrays;
 
 public class TemplatesTagParser implements TagParser
 {
+	public static final String TEMPLATES_LIST_PROP = "kairosdb.carbon.templatestagparser.templates";
+
+	private String m_templates;
+
 	@Inject
 	public TemplatesTagParser(
-		@Named("kairosdb.carbon.templatestagparser.templates")String templates
-	)
+		@Named(TEMPLATES_LIST_PROP)String templates)
 	{
-		Templates.parse(templates);
+		m_templates = templates;
+
+		Templates.parse(m_templates);
 	}
 
 	@Override
 	public CarbonMetric parseMetricName(String metricName)
 	{
-		Template m_template = Templates.lookup(metricName);
-		if (m_template != null) {
-			CarbonMetric ret = new CarbonMetric(m_template.buildMetricName(metricName));
-			m_template.addTags(ret, metricName);
-			return ret;
+		CarbonMetric ret;
+		Template template = Templates.lookup(metricName);
+
+		if (template == null) {
+			ret = invalidMetric(metricName, "no matching template");
 		} else {
-			return null;
+			String targetMetric = template.buildMetricName(metricName);
+			if (targetMetric == null) {
+				ret = invalidMetric(metricName, "does not match metric name pattern", template);
+			} else {
+				ret = template.addTags(new CarbonMetric(targetMetric), metricName);
+				if (ret == null) {
+					ret = invalidMetric(metricName, "does not match tags pattern", template);
+				}
+			}
 		}
+
+		return ret;
+	}
+
+	private CarbonMetric invalidMetric(String metricName, String cause)
+	{
+		CarbonMetric ret = new CarbonMetric("invalidMetrics");
+		ret.addTag("metricName", metricName);
+		ret.addTag("cause", cause);
+		return ret;
+	}
+
+	private CarbonMetric invalidMetric(String metricName, String cause, Template template)
+	{
+		CarbonMetric ret = invalidMetric(metricName, cause);
+		ret.addTag("templateFilter", template.getFilterSource());
+		return ret;
 	}
 }
