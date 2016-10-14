@@ -30,6 +30,8 @@ public class TemplatesTagParser implements TagParser
 		if (template == null) {
 			ret = invalidMetric(metricName, "no matching template");
 		} else {
+			if (!template.has_template()) { return null; }
+
 			String targetMetric = template.buildMetricName(metricName);
 			if (targetMetric == null) {
 				ret = invalidMetric(metricName, "does not match metric name pattern", template);

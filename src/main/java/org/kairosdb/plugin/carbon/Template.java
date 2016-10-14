@@ -23,31 +23,33 @@ public class Template
 
 	public Template(String string) {
 		List<String> parts = Arrays.asList(string.split(" "));
-		if (parts.size() >= 2) {
+		if (parts.size() >= 1) {
 			this.filterSource = parts.get(0);
 			this.filter = Pattern.compile(filterSource);
-			this.template = parts.get(1);
-			for(int i = 2; i < parts.size(); i++) {
-				String part = parts.get(i);
-				if (part.matches("^\\[\\S(?:,\\S)?\\]$")) {
-					part = part.replaceAll("([\\[\\]])", "");
-					List<String> separators = new LinkedList<String>(Arrays.asList(part.split(",")));
-					if (separators.size() < 2) { separators.add(separators.get(0)); }
-					this.sourceSeparator = separators.get(0);
-					this.targetSeparator = separators.get(1);
-				} else if (part.matches("^(?:\\w+=\\w+,?)*(?:\\w+=\\w+)$")) {
-					List<String> tags = Arrays.asList(part.split(","));
-					for (String tag : tags) {
-						List<String> tagParts = Arrays.asList(tag.split("="));
-						staticTags.put(tagParts.get(0), tagParts.get(1));
+			if (parts.size() >= 2) {
+				this.template = parts.get(1);
+				for(int i = 2; i < parts.size(); i++) {
+					String part = parts.get(i);
+					if (part.matches("^\\[\\S(?:,\\S)?\\]$")) {
+						part = part.replaceAll("([\\[\\]])", "");
+						List<String> separators = new LinkedList<String>(Arrays.asList(part.split(",")));
+						if (separators.size() < 2) { separators.add(separators.get(0)); }
+						this.sourceSeparator = separators.get(0);
+						this.targetSeparator = separators.get(1);
+					} else if (part.matches("^(?:\\w+=\\w+,?)*(?:\\w+=\\w+)$")) {
+						List<String> tags = Arrays.asList(part.split(","));
+						for (String tag : tags) {
+							List<String> tagParts = Arrays.asList(tag.split("="));
+							staticTags.put(tagParts.get(0), tagParts.get(1));
+						}
+					} else {
+						throw new IllegalArgumentException("unknown parameter: " + part);
 					}
-				} else {
-					throw new IllegalArgumentException("unknown parameter: " + part);
 				}
+				buildTemplatePatterns();
 			}
-			buildTemplatePatterns();
 		} else {
-			throw new IllegalArgumentException("less than 2 space separated parts");
+			throw new IllegalArgumentException("empty template string");
 		}
 	}
 
@@ -140,6 +142,8 @@ public class Template
 	public List<String> getTagNames() { return tagNames; }
 
 	public String getTemplate() { return template; }
+
+	public boolean has_template() { return template != null; }
 
 	public boolean matches(String metricName) {
 		Matcher matcher = filter.matcher(metricName);

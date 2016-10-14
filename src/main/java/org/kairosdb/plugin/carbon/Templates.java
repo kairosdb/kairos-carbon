@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class Templates
 {
-  public static final Logger logger = LoggerFactory.getLogger(Templates.class);
+	public static final Logger logger = LoggerFactory.getLogger(Templates.class);
 	private static List<Template> templates = new ArrayList<Template>();
 
 	public static void parse(String templates) {
@@ -21,21 +21,25 @@ public class Templates
 			logger.debug("({}) Parsing template string: {}", count, element);
 			try {
 				Template template = new Template(element);
-				logger.debug(
-					"({}) Built template:\n" +
-					"	Separators: Source='{}' Target='{}'\n" +
-					"	Metric name pattern: {}\n" +
-					"	Tags pattern: {}\n" +
-					"	Tag names: {}\n" +
-					"	Static tags: {}",
-					count,
-					template.getSourceSeparator(),
-					template.getTargetSeparator(),
-					template.getMetricNamePattern(),
-					template.getTagsPattern(),
-					template.getTagNames(),
-					template.getStaticTags()
-				);
+				if (template.has_template()) {
+					logger.debug(
+						"({}) Built template:\n" +
+						"	Separators: Source='{}' Target='{}'\n" +
+						"	Metric name pattern: {}\n" +
+						"	Tags pattern: {}\n" +
+						"	Tag names: {}\n" +
+						"	Static tags: {}",
+						count,
+						template.getSourceSeparator(),
+						template.getTargetSeparator(),
+						template.getMetricNamePattern(),
+						template.getTagsPattern(),
+						template.getTagNames(),
+						template.getStaticTags()
+					);
+				} else {
+					logger.debug("({}) Built DROP template", count);
+				}
 				add(template);
 			} catch (IllegalArgumentException e) {
 				String msg = "({}) Invalid template string ({}): {}";
