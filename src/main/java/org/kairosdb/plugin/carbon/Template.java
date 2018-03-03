@@ -13,6 +13,7 @@ public class Template
 {
 	private List<String> tagNames;
 	private Pattern filter;
+	private String filterSource;
 	private Pattern metricNamePattern;
 	private Pattern tagsPattern;
 	private String sourceSeparator = ".";
@@ -22,58 +23,68 @@ public class Template
 
 	public Template(String string) {
 		List<String> parts = Arrays.asList(string.split(" "));
-		if (parts.size() >= 2) {
-			this.filter = Pattern.compile(parts.get(0));
-			this.template = parts.get(1);
-			for(int i = 2; i < parts.size(); i++) {
-				String part = parts.get(i);
-				if (part.matches("^\\[\\S(?:,\\S)?\\]$")) {
-					part = part.replaceAll("([\\[\\]])", "");
-					List<String> separators = new LinkedList<String>(Arrays.asList(part.split(",")));
-					if (separators.size() < 2) { separators.add(separators.get(0)); }
-					this.sourceSeparator = separators.get(0);
-					this.targetSeparator = separators.get(1);
-				} else if (part.matches("^(?:\\w+=\\w+,?)*(?:\\w+=\\w+)$")) {
-					List<String> tags = Arrays.asList(part.split(","));
-					for (String tag : tags) {
-						List<String> tagParts = Arrays.asList(tag.split("="));
-						staticTags.put(tagParts.get(0), tagParts.get(1));
+		if (parts.size() >= 1) {
+			this.filterSource = parts.get(0);
+			this.filter = Pattern.compile(filterSource);
+			if (parts.size() >= 2) {
+				this.template = parts.get(1);
+				for(int i = 2; i < parts.size(); i++) {
+					String part = parts.get(i);
+					if (part.matches("^\\[\\S(?:,\\S)?\\]$")) {
+						part = part.replaceAll("([\\[\\]])", "");
+						List<String> separators = new LinkedList<String>(Arrays.asList(part.split(",")));
+						if (separators.size() < 2) { separators.add(separators.get(0)); }
+						this.sourceSeparator = separators.get(0);
+						this.targetSeparator = separators.get(1);
+					} else if (part.matches("^(?:\\w+=\\w+,?)*(?:\\w+=\\w+)$")) {
+						List<String> tags = Arrays.asList(part.split(","));
+						for (String tag : tags) {
+							List<String> tagParts = Arrays.asList(tag.split("="));
+							staticTags.put(tagParts.get(0), tagParts.get(1));
+						}
+					} else {
+						throw new IllegalArgumentException("unknown parameter: " + part);
 					}
-				} else {
-					throw new IllegalArgumentException("unknown parameter: " + part);
 				}
+				buildTemplatePatterns();
 			}
-			buildTemplatePatterns();
 		} else {
-			throw new IllegalArgumentException("less than 2 space separated parts");
+			throw new IllegalArgumentException("empty template string");
 		}
 	}
 
-	public void addTags(CarbonMetric ret, String metricName) {
-		Matcher matcher = tagsPattern.matcher(metricName);
-		matcher.find();
-		for (int i = 1; i <= matcher.groupCount(); i++) {
-			ret.addTag(tagNames.get(i - 1), matcher.group(i));
+	public CarbonMetric addTags(CarbonMetric ret, String metric) {
+		Matcher matcher = tagsPattern.matcher(metric);
+		if (matcher.matches()) {
+			for (int i = 1; i <= matcher.groupCount(); i++) {
+				ret.addTag(tagNames.get(i - 1), matcher.group(i));
+			}
+			return addStaticTags(ret);
+		} else {
+			return null;
 		}
-		addStaticTags(ret);
 	}
 
-	public void addStaticTags(CarbonMetric ret) {
+	public CarbonMetric addStaticTags(CarbonMetric ret) {
 		for (Map.Entry<String, String> tag : staticTags.entrySet()) {
 			ret.addTag(tag.getKey(), tag.getValue());
 		}
+		return ret;
 	}
 
 	public String buildMetricName(String metric) {
 		List<String> matches = new ArrayList<String>();
 		Matcher matcher = metricNamePattern.matcher(metric);
-		matcher.find();
-		for(int i = 1; i <= matcher.groupCount(); i++) {
-			matches.add(matcher.group(i));
+		if (matcher.matches()) {
+			for(int i = 1; i <= matcher.groupCount(); i++) {
+				matches.add(matcher.group(i));
+			}
+			String r_sourceSep = "\\" + sourceSeparator;
+			String metricName = String.join(targetSeparator, matches);
+			return metricName.replaceAll(r_sourceSep, targetSeparator);
+		} else {
+			return null;
 		}
-		String r_sourceSep = "\\" + sourceSeparator;
-		String metricName = String.join(targetSeparator, matches);
-		return metricName.replaceAll(r_sourceSep, targetSeparator);
 	}
 
 	private void buildTemplatePatterns() {
@@ -116,6 +127,8 @@ public class Template
 
 	public Pattern getFilter() { return filter; }
 
+	public String getFilterSource() { return filterSource; }
+
 	public Pattern getMetricNamePattern() { return metricNamePattern; }
 
 	public Pattern getTagsPattern() { return tagsPattern; }
@@ -129,6 +142,8 @@ public class Template
 	public List<String> getTagNames() { return tagNames; }
 
 	public String getTemplate() { return template; }
+
+	public boolean has_template() { return template != null; }
 
 	public boolean matches(String metricName) {
 		Matcher matcher = filter.matcher(metricName);
