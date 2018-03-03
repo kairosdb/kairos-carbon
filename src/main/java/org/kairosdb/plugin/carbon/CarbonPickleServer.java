@@ -124,7 +124,7 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 
 				try
 				{
-					m_datastore.putDataPoint(carbonMetric.getName(), carbonMetric.getTags(), dataPoint);
+					m_datastore.putDataPoint(carbonMetric.getName(), carbonMetric.getTags(), dataPoint, carbonMetric.getTtl());
 				}
 				catch (DatastoreException e)
 				{

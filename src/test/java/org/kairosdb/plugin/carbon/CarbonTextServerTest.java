@@ -43,6 +43,7 @@ import static org.mockito.Mockito.verify;
 public class CarbonTextServerTest
 {
 	private final static int CARBON_PORT = 2003;
+	private final int ZERO_TTL = 0;
 
 	private KairosDatastore m_datastore;
 	private CarbonTextServer m_server;
@@ -84,7 +85,7 @@ public class CarbonTextServerTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234), ZERO_TTL);
 	}
 
 	@Test
@@ -100,6 +101,6 @@ public class CarbonTextServerTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
-						new DoubleDataPoint(now * 1000, 12.34));
+						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL);
 	}
 }
