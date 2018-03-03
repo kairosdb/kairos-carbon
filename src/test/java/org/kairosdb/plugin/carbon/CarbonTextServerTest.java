@@ -29,7 +29,9 @@ import org.kairosdb.util.Tags;
 
 import java.io.IOException;
 
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
@@ -102,5 +104,35 @@ public class CarbonTextServerTest
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("test.metric_name", tags,
 						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL);
+	}
+	
+	@Test
+	public void test_putDataPoints_notANumber() throws DatastoreException, InterruptedException
+	{
+	    long now = System.currentTimeMillis() / 1000;
+
+	    m_client.sendText("test.host_name.metric_name", now, "NaN");
+
+	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	}
+
+	@Test
+	public void test_putDataPoints_infinity() throws DatastoreException, InterruptedException
+	{
+	    long now = System.currentTimeMillis() / 1000;
+
+	    m_client.sendText("test.host_name.metric_name", now, "Infinity");
+
+	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	}
+
+	@Test
+	public void test_putDataPoints_negativeInfinity() throws DatastoreException, InterruptedException
+	{
+	    long now = System.currentTimeMillis() / 1000;
+
+	    m_client.sendText("test.host_name.metric_name", now, "-Infinity");
+
+	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
 	}
 }
