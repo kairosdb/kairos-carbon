@@ -77,7 +77,7 @@ public class TemplatesTagParserTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("metric.name", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234), 0);
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class TemplatesTagParserTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("metric_name", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234), 0);
 	}
 
 	@Test
@@ -110,7 +110,7 @@ public class TemplatesTagParserTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("metric.name", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234), 0);
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class TemplatesTagParserTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("invalidMetrics", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234), 0);
 	}
 
 	@Test
@@ -145,6 +145,6 @@ public class TemplatesTagParserTest
 
 		verify(m_datastore, timeout(5000).times(1))
 				.putDataPoint("invalidMetrics", tags,
-						new LongDataPoint(now * 1000, 1234));
+						new LongDataPoint(now * 1000, 1234),0);
 	}
 }
