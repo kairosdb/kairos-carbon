@@ -16,20 +16,19 @@ public class GraphiteTagsParser implements TagParser {
   @Override
   public CarbonMetric parseMetricName(String metricName) {
     List<String> nameTags = Splitter.on(";").limit(2).splitToList(metricName);
-    if (nameTags.size() == 2) {
-      CarbonMetric metric = new CarbonMetric(nameTags.get(0));
-      Map<String,String> tags = Splitter.on(",").withKeyValueSeparator("=").split(nameTags.get(1));
-      if(tags.size() == 0){
-        logger.warn("metric must at least have one tag! foo.bar;host=bla.com {} - ignoring metric", metricName);
-        return metric;
-      }
-      for(Map.Entry<String,String> kv : tags.entrySet()){
-        metric.addTag(kv.getKey(),kv.getValue());
-      }
-      return metric;
-    } else {
+    if (nameTags.size() <= 1) {
       logger.warn("unparseable metric {} - ignoring metric", metricName);
       return null;
     }
+    Map<String, String> tags = Splitter.on(";").withKeyValueSeparator("=").split(nameTags.get(1));
+    if (tags.size() == 0) {
+      logger.warn("metric must at least have one tag! foo.bar;host=bla.com {} - ignoring metric", metricName);
+      return null;
+    }
+    CarbonMetric metric = new CarbonMetric(nameTags.get(0));
+    for (Map.Entry<String, String> kv : tags.entrySet()) {
+      metric.addTag(kv.getKey(), kv.getValue());
+    }
+    return metric;
   }
 }
