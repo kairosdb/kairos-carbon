@@ -7,7 +7,7 @@
 		<conf name="provided" extends="default"/>
 	</configurations>
 	<dependencies>
-		<dependency org="org.kairosdb" name="kairosdb" rev="1.1.3-1" conf="provided->default" />
+		<dependency org="org.kairosdb" name="kairosdb" rev="1.2.1-1" conf="provided->default" />
 		<!--<dependency org="com.sun.jersey" name="jersey-servlet" rev="1.15" transitive="false"/>-->
 
 		<!--<dependency org="net.razorvine" name="pyrolite" rev="4.12" />-->

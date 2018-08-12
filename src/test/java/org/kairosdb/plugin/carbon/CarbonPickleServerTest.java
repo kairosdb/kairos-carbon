@@ -22,9 +22,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kairosdb.core.datapoints.DoubleDataPoint;
 import org.kairosdb.core.datapoints.LongDataPoint;
-import org.kairosdb.core.datastore.KairosDatastore;
 import org.kairosdb.core.exception.DatastoreException;
 import org.kairosdb.core.exception.KairosDBException;
+import org.kairosdb.eventbus.FilterEventBus;
+import org.kairosdb.eventbus.Publisher;
+import org.kairosdb.events.DataPointEvent;
 import org.kairosdb.util.Tags;
 
 import java.io.IOException;
@@ -43,21 +45,23 @@ public class CarbonPickleServerTest
 	private final static int CARBON_PORT = 2004;
 	private final int ZERO_TTL = 0;
 
-	private KairosDatastore m_datastore;
+	private Publisher<DataPointEvent> m_publisher;
 	private CarbonPickleServer m_server;
 	private CarbonClient m_client;
 
 	@Before
 	public void setupDatastore() throws KairosDBException, IOException
 	{
-		m_datastore = mock(KairosDatastore.class);
+		m_publisher = (Publisher<DataPointEvent>) mock(Publisher.class);
+		FilterEventBus eventBus = mock(FilterEventBus.class);
+		when(eventBus.createPublisher(DataPointEvent.class)).thenReturn(m_publisher);
 		HostTagParser hostTagParser = new HostTagParser(
 				"[^.]*\\.([^.]*)\\..*",
 				"$1",
 				"([^.]*)\\.[^.]*\\.(.*)",
 				"$1.$2");
 
-		m_server = new CarbonPickleServer(m_datastore, hostTagParser);
+		m_server = new CarbonPickleServer(eventBus, hostTagParser);
 		m_server.start();
 
 		m_client = new CarbonClient("127.0.0.1", CARBON_PORT);
@@ -81,9 +85,9 @@ public class CarbonPickleServerTest
 				.put("host", "host_name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("test.metric_name", tags,
-						new LongDataPoint(now * 1000, 1234),ZERO_TTL);
+		verify(m_publisher, timeout(5000).times(1))
+				.post( new DataPointEvent("test.metric_name", tags,
+						new LongDataPoint(now * 1000, 1234),ZERO_TTL));
 	}
 
 	@Test
@@ -97,8 +101,8 @@ public class CarbonPickleServerTest
 				.put("host", "host_name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("test.metric_name", tags,
-						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("test.metric_name", tags,
+						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL));
 	}
 }

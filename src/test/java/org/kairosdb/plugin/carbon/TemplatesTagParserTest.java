@@ -20,22 +20,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kairosdb.core.datapoints.DoubleDataPoint;
 import org.kairosdb.core.datapoints.LongDataPoint;
-import org.kairosdb.core.datastore.KairosDatastore;
 import org.kairosdb.core.exception.DatastoreException;
 import org.kairosdb.core.exception.KairosDBException;
+import org.kairosdb.eventbus.FilterEventBus;
+import org.kairosdb.eventbus.Publisher;
+import org.kairosdb.events.DataPointEvent;
 import org.kairosdb.util.Tags;
 
 import java.io.IOException;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class TemplatesTagParserTest
 {
 	private final static int CARBON_PORT = 2003;
 
-	private KairosDatastore m_datastore;
+	private Publisher<DataPointEvent> m_publisher;
 	private CarbonTextServer m_server;
 	private CarbonClient m_client;
 	private String m_templates;
@@ -43,7 +43,10 @@ public class TemplatesTagParserTest
 	@Before
 	public void setupDatastore() throws KairosDBException, IOException
 	{
-		m_datastore = mock(KairosDatastore.class);
+		m_publisher = (Publisher<DataPointEvent>) mock(Publisher.class);
+		FilterEventBus eventBus = mock(FilterEventBus.class);
+		when(eventBus.createPublisher(DataPointEvent.class)).thenReturn(m_publisher);
+
 		m_templates =
 			"^test.metric .metric.host.metric*;" +
 			"^test2.metric .metric.host.metric* [.,_];" +
@@ -51,7 +54,7 @@ public class TemplatesTagParserTest
 
 		TemplatesTagParser templatesTagParser = new TemplatesTagParser(m_templates);
 
-		m_server = new CarbonTextServer(m_datastore, templatesTagParser, CARBON_PORT);
+		m_server = new CarbonTextServer(eventBus, templatesTagParser, CARBON_PORT);
 		m_server.start();
 
 		m_client = new CarbonClient("127.0.0.1", CARBON_PORT);
@@ -75,9 +78,9 @@ public class TemplatesTagParserTest
 				.put("host", "host_name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("metric.name", tags,
-						new LongDataPoint(now * 1000, 1234), 0);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("metric.name", tags,
+						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
 	@Test
@@ -91,9 +94,9 @@ public class TemplatesTagParserTest
 				.put("host", "host_name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("metric_name", tags,
-						new LongDataPoint(now * 1000, 1234), 0);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("metric_name", tags,
+						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
 	@Test
@@ -108,9 +111,9 @@ public class TemplatesTagParserTest
 				.put("type", "static")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("metric.name", tags,
-						new LongDataPoint(now * 1000, 1234), 0);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("metric.name", tags,
+						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
 	@Test
@@ -125,9 +128,9 @@ public class TemplatesTagParserTest
 				.put("metricName", "metric.host_name.name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("invalidMetrics", tags,
-						new LongDataPoint(now * 1000, 1234), 0);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("invalidMetrics", tags,
+						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
 	@Test
@@ -143,8 +146,8 @@ public class TemplatesTagParserTest
 				.put("templateFilter", "^test.metric")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("invalidMetrics", tags,
-						new LongDataPoint(now * 1000, 1234),0);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("invalidMetrics", tags,
+						new LongDataPoint(now * 1000, 1234),0));
 	}
 }

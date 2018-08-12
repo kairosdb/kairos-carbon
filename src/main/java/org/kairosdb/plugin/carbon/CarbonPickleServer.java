@@ -10,9 +10,11 @@ import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.KairosDBService;
 import org.kairosdb.plugin.carbon.pickle.PickleMetric;
 import org.kairosdb.core.datapoints.*;
-import org.kairosdb.core.datastore.KairosDatastore;
 import org.kairosdb.core.exception.DatastoreException;
 import org.kairosdb.core.exception.KairosDBException;
+import org.kairosdb.eventbus.FilterEventBus;
+import org.kairosdb.eventbus.Publisher;
+import org.kairosdb.events.DataPointEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,20 +52,20 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	@Named("kairosdb.carbon.pickle.max_size")
 	private int m_maxSize = 2048;
 
-	private final KairosDatastore m_datastore;
+	private final Publisher<DataPointEvent> m_publisher;
 	private final TagParser m_tagParser;
 	private ServerBootstrap m_serverBootstrap;
 
-	public CarbonPickleServer(KairosDatastore datastore, TagParser tagParser)
+	public CarbonPickleServer(FilterEventBus eventBus, TagParser tagParser)
 	{
-		this(datastore, tagParser, null);
+		this(eventBus, tagParser, null);
 	}
 
 	@Inject
-	public CarbonPickleServer(KairosDatastore datastore, TagParser tagParser,
+	public CarbonPickleServer(FilterEventBus eventBus, TagParser tagParser,
 		@Named("kairosdb.carbon.pickle.address") String address)
 	{
-		m_datastore = datastore;
+		m_publisher = eventBus.createPublisher(DataPointEvent.class);
 		m_tagParser = tagParser;
     	m_address = null;
         try
@@ -124,9 +126,9 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 
 				try
 				{
-					m_datastore.putDataPoint(carbonMetric.getName(), carbonMetric.getTags(), dataPoint, carbonMetric.getTtl());
+					m_publisher.post( new DataPointEvent(carbonMetric.getName(), carbonMetric.getTags(), dataPoint, carbonMetric.getTtl()));
 				}
-				catch (DatastoreException e)
+				catch (Exception e)
 				{
 					e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 				}
