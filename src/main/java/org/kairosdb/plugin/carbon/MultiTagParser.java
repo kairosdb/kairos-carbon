@@ -54,10 +54,10 @@ public class MultiTagParser implements TagParser {
     {
 
 
-        String[] m_hostPatterns = multiPatterns.split(";");
+        String[] hostPatterns = multiPatterns.split(";");
 
-        for(String m_hostPatternStr : m_hostPatterns) {
-            m_pattern_list.add(Pattern.compile(m_hostPatternStr.trim()));
+        for(String hostPatternStr : hostPatterns) {
+            m_pattern_list.add(Pattern.compile(hostPatternStr.trim()));
         }
 
         m_replacement_list = Arrays.asList(multiReplacements.split(";"));

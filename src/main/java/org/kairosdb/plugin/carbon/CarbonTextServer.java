@@ -28,6 +28,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  Created with IntelliJ IDEA.
  User: bhawkins
@@ -64,7 +66,7 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 			@Named("kairosdb.carbon.text.address") String address)
 	{
 		m_port = port;
-		m_publisher = eventBus.createPublisher(DataPointEvent.class);
+		m_publisher = checkNotNull(eventBus).createPublisher(DataPointEvent.class);
 		m_tagParser = tagParser;
 		m_address = null;
 		try

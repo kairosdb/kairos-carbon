@@ -24,6 +24,8 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.Executors;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  Created with IntelliJ IDEA.
  User: bhawkins
@@ -65,7 +67,7 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	public CarbonPickleServer(FilterEventBus eventBus, TagParser tagParser,
 		@Named("kairosdb.carbon.pickle.address") String address)
 	{
-		m_publisher = eventBus.createPublisher(DataPointEvent.class);
+		m_publisher = checkNotNull(eventBus).createPublisher(DataPointEvent.class);
 		m_tagParser = tagParser;
     	m_address = null;
         try
@@ -130,7 +132,7 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+					logger.error("Error posting data point", e);
 				}
 			}
 		}
