@@ -7,3 +7,8 @@ KairosDB plugin for the carbon protocol
 To install this plugin first build the jar file using the instructions
 int the how_to_build.txt file.  Then copy the jar and karios-carbon.properties
 files into /opt/kairosdb/lib and /opt/kairosdb/conf directories respectively.
+
+
+For graphite style tags [graphite doc](http://graphite.readthedocs.io/en/latest/tags.html) use 
+```kairosdb.carbon.tagparser=org.kairosdb.plugin.carbon.GraphiteTagsParser```
+
