@@ -14,9 +14,11 @@ import org.kairosdb.core.datapoints.DoubleDataPointFactory;
 import org.kairosdb.core.datapoints.DoubleDataPointFactoryImpl;
 import org.kairosdb.core.datapoints.LongDataPointFactory;
 import org.kairosdb.core.datapoints.LongDataPointFactoryImpl;
-import org.kairosdb.core.datastore.KairosDatastore;
 import org.kairosdb.core.exception.KairosDBException;
 import org.kairosdb.core.telnet.WordSplitter;
+import org.kairosdb.eventbus.FilterEventBus;
+import org.kairosdb.eventbus.Publisher;
+import org.kairosdb.events.DataPointEvent;
 import org.kairosdb.util.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,7 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 
 	private final int m_port;
 	private InetAddress m_address;
-	private final KairosDatastore m_datastore;
+	private final Publisher<DataPointEvent> m_publisher;
 	private final TagParser m_tagParser;
 	private ServerBootstrap m_serverBootstrap;
 
@@ -50,19 +52,19 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 	@Inject
 	private DoubleDataPointFactory m_doubleDataPointFactory = new DoubleDataPointFactoryImpl();
 
-	public CarbonTextServer(KairosDatastore datastore,
+	public CarbonTextServer(FilterEventBus eventBus,
 			TagParser tagParser, @Named("kairosdb.carbon.text.port") int port)
 	{
-		this(datastore, tagParser, port, null);
+		this(eventBus, tagParser, port, null);
 	}
 
 	@Inject
-	public CarbonTextServer(KairosDatastore datastore,
+	public CarbonTextServer(FilterEventBus eventBus,
 			TagParser tagParser, @Named("kairosdb.carbon.text.port") int port,
 			@Named("kairosdb.carbon.text.address") String address)
 	{
 		m_port = port;
-		m_datastore = datastore;
+		m_publisher = eventBus.createPublisher(DataPointEvent.class);
 		m_tagParser = tagParser;
 		m_address = null;
 		try
@@ -125,18 +127,18 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
                   logger.info("Metric {} has a value of 'NaN'.  Not sending to Kairos", msgArr[0]);
                   return;
                 }
-                
+
                 if (msgArr[1].toLowerCase().contains("infinity")) {
                   logger.info("Metric {} has a value of Infinity/-Infinity.  Not sending to Kairos", msgArr[0]);
                   return;
-                }				
-				
+                }
+
 				if (msgArr[1].contains("."))
 					dp = m_doubleDataPointFactory.createDataPoint(timestamp, Double.parseDouble(msgArr[1]));
 				else
 					dp = m_longDataPointFactory.createDataPoint(timestamp, Long.parseLong(msgArr[1]));
 
-				m_datastore.putDataPoint(carbonMetric.getName(), carbonMetric.getTags(), dp, carbonMetric.getTtl());
+				m_publisher.post(new DataPointEvent(carbonMetric.getName(), carbonMetric.getTags(), dp, carbonMetric.getTtl()));
 			}
 			catch (Exception e)
 			{

@@ -20,20 +20,20 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.kairosdb.core.datapoints.DoubleDataPoint;
 import org.kairosdb.core.datapoints.LongDataPoint;
 import org.kairosdb.core.datastore.KairosDatastore;
 import org.kairosdb.core.exception.DatastoreException;
 import org.kairosdb.core.exception.KairosDBException;
+import org.kairosdb.eventbus.FilterEventBus;
+import org.kairosdb.eventbus.Publisher;
+import org.kairosdb.events.DataPointEvent;
 import org.kairosdb.util.Tags;
 
 import java.io.IOException;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  Created with IntelliJ IDEA.
@@ -47,21 +47,23 @@ public class CarbonTextServerTest
 	private final static int CARBON_PORT = 2003;
 	private final int ZERO_TTL = 0;
 
-	private KairosDatastore m_datastore;
+	private Publisher<DataPointEvent> m_publisher;
 	private CarbonTextServer m_server;
 	private CarbonClient m_client;
 
 	@Before
 	public void setupDatastore() throws KairosDBException, IOException
 	{
-		m_datastore = mock(KairosDatastore.class);
+		m_publisher = (Publisher<DataPointEvent>) mock(Publisher.class);
+		FilterEventBus eventBus = mock(FilterEventBus.class);
+		when(eventBus.createPublisher(DataPointEvent.class)).thenReturn(m_publisher);
 		HostTagParser hostTagParser = new HostTagParser(
 				"[^.]*\\.([^.]*)\\..*",
 				"$1",
 				"([^.]*)\\.[^.]*\\.(.*)",
 				"$1.$2");
 
-		m_server = new CarbonTextServer(m_datastore, hostTagParser, CARBON_PORT);
+		m_server = new CarbonTextServer(eventBus, hostTagParser, CARBON_PORT);
 		m_server.start();
 
 		m_client = new CarbonClient("127.0.0.1", CARBON_PORT);
@@ -85,9 +87,9 @@ public class CarbonTextServerTest
 				.put("host", "host_name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("test.metric_name", tags,
-						new LongDataPoint(now * 1000, 1234), ZERO_TTL);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("test.metric_name", tags,
+						new LongDataPoint(now * 1000, 1234), ZERO_TTL));
 	}
 
 	@Test
@@ -101,11 +103,11 @@ public class CarbonTextServerTest
 				.put("host", "host_name")
 				.build();
 
-		verify(m_datastore, timeout(5000).times(1))
-				.putDataPoint("test.metric_name", tags,
-						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL);
+		verify(m_publisher, timeout(5000).times(1))
+				.post(new DataPointEvent("test.metric_name", tags,
+						new DoubleDataPoint(now * 1000, 12.34),ZERO_TTL));
 	}
-	
+
 	@Test
 	public void test_putDataPoints_notANumber() throws DatastoreException, InterruptedException
 	{
@@ -113,7 +115,7 @@ public class CarbonTextServerTest
 
 	    m_client.sendText("test.host_name.metric_name", now, "NaN");
 
-	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	    verify(m_publisher, never()).post(any());
 	}
 
 	@Test
@@ -123,7 +125,7 @@ public class CarbonTextServerTest
 
 	    m_client.sendText("test.host_name.metric_name", now, "Infinity");
 
-	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	    verify(m_publisher, never()).post(any());
 	}
 
 	@Test
@@ -133,6 +135,6 @@ public class CarbonTextServerTest
 
 	    m_client.sendText("test.host_name.metric_name", now, "-Infinity");
 
-	    verify(m_datastore, never()).putDataPoint(any(), any(), any());
+	    verify(m_publisher, never()).post(any());
 	}
 }
