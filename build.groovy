@@ -235,8 +235,8 @@ def doRPM(Rule rule)
 				setPlatform(Architecture.NOARCH, Os.LINUX)
 				summary = summary
 				type = RpmType.BINARY
-				url = "http://code.google.com/p/kairosdb/"
-				vendor = "Proofpoint Inc."
+				url = "http://kairosdb.org"
+				vendor = "KairosDB"
 				provides = programName
 				buildHost = host
 				sourceRpm = srcRpmFile
@@ -300,41 +300,6 @@ def doDeb(Rule rule)
 			throw new TablesawException("Unable to run alien application")
 	}
 }
-
-
-//------------------------------------------------------------------------------
-//Run the Kairos application
-new SimpleRule("run-debug").setDescription("Runs kairosdb so a debugger can attach to port 5005")
-		.addDepends(jp.getJarRule())
-		.setMakeAction("doRun")
-		.setProperty("DEBUG", true)
-
-new SimpleRule("run").setDescription("Runs kairosdb")
-		.addDepends(jp.getJarRule())
-		.setMakeAction("doRun")
-		.setProperty("DEBUG", false)
-
-
-def doRun(Rule rule)
-{
-	args = "-c run"
-
-	//Check if you have a custom kairosdb.properties file and load it.
-	customProps = new File("kairosdb.properties")
-	if (customProps.exists())
-		args += " -p kairosdb.properties"
-
-	debug = ""
-	if (rule.getProperty("DEBUG"))
-		debug = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
-
-	//this is to load logback into classpath
-	runClasspath = jc.getClasspath()
-	runClasspath.addPath("src/main/resources")
-	ret = saw.exec("java ${debug} -Dio.netty.epollBugWorkaround=true -cp ${runClasspath} org.kairosdb.core.Main ${args}", false)
-	println(ret);
-}
-
 
 
 saw.setDefaultTarget("jar")

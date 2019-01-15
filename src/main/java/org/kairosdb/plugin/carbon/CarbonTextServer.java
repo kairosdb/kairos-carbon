@@ -125,15 +125,17 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 				long timestamp = Long.parseLong(msgArr[2]) * 1000; //Converting to milliseconds
 
 				DataPoint dp;
-                if ("NaN".equalsIgnoreCase(msgArr[1])) {
-                  logger.info("Metric {} has a value of 'NaN'.  Not sending to Kairos", msgArr[0]);
-                  return;
-                }
+				if ("NaN".equalsIgnoreCase(msgArr[1]))
+				{
+					logger.info("Metric {} has a value of 'NaN'.  Not sending to Kairos", msgArr[0]);
+					return;
+				}
 
-                if (msgArr[1].toLowerCase().contains("infinity")) {
-                  logger.info("Metric {} has a value of Infinity/-Infinity.  Not sending to Kairos", msgArr[0]);
-                  return;
-                }
+				if (msgArr[1].toLowerCase().contains("infinity"))
+				{
+					logger.info("Metric {} has a value of Infinity/-Infinity.  Not sending to Kairos", msgArr[0]);
+					return;
+				}
 
 				if (msgArr[1].contains("."))
 					dp = m_doubleDataPointFactory.createDataPoint(timestamp, Double.parseDouble(msgArr[1]));

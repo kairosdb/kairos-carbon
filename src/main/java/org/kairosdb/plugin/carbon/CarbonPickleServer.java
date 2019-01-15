@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.kairosdb.core.DataPoint;
@@ -69,15 +70,15 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	{
 		m_publisher = checkNotNull(eventBus).createPublisher(DataPointEvent.class);
 		m_tagParser = tagParser;
-    	m_address = null;
-        try
-        {
-            m_address = InetAddress.getByName(address);
-        }
-        catch (UnknownHostException e)
-        {
+		m_address = null;
+		try
+		{
+			m_address = InetAddress.getByName(address);
+		}
+		catch (UnknownHostException e)
+		{
 			logger.error("Unknown host name " + address + ", will bind to 0.0.0.0");
-        }
+		}
 	}
 
 	@Override
@@ -100,10 +101,13 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	public void messageReceived(final ChannelHandlerContext ctx,
 			final MessageEvent msgevent)
 	{
+		logger.info("Message received");
 		if (msgevent.getMessage() instanceof List)
 		{
+			logger.info("yup list");
 			for (Object o : (List) msgevent.getMessage())
 			{
+				logger.info("verify pickle");
 				//todo verify cast
 				PickleMetric metric = (PickleMetric)o;
 
@@ -155,6 +159,7 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 
 		// Bind and start to accept incoming connections.
 		m_serverBootstrap.bind(new InetSocketAddress(m_address, m_port));
+
 	}
 
 	@Override
