@@ -2,11 +2,15 @@ package org.kairosdb.plugin.carbon;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.Delimiters;
+import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import org.jboss.netty.handler.codec.frame.LineBasedFrameDecoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.KairosDBService;
@@ -49,10 +53,15 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 	private ServerBootstrap m_serverBootstrap;
 
 	@Inject
+	@Named("kairosdb.carbon.text.max_size")
+	private int m_maxSize = 2048;
+
+	@Inject
 	private LongDataPointFactory m_longDataPointFactory = new LongDataPointFactoryImpl();
 
 	@Inject
 	private DoubleDataPointFactory m_doubleDataPointFactory = new DoubleDataPointFactoryImpl();
+	private ConnectionlessBootstrap m_udpBootstrap;
 
 	public CarbonTextServer(FilterEventBus eventBus,
 			TagParser tagParser, @Named("kairosdb.carbon.text.port") int port)
@@ -85,8 +94,9 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 		ChannelPipeline pipeline = Channels.pipeline();
 
 		// Add the text line codec combination first,
-		DelimiterBasedFrameDecoder frameDecoder = new DelimiterBasedFrameDecoder(
-				1024, Delimiters.lineDelimiter());
+		FrameDecoder frameDecoder = new LineBasedFrameDecoder(
+				m_maxSize, true, true);
+
 		pipeline.addLast("framer", frameDecoder);
 		pipeline.addLast("decoder", new WordSplitter());
 		pipeline.addLast("encoder", new StringEncoder());
@@ -122,6 +132,11 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 					return;
 				}
 
+				if ("NaN".equalsIgnoreCase(msgArr[2]))
+				{
+					logger.info("Metric {} has a timetamp of 'NaN'.  Not sending to Kairos", msgArr[0]);
+					return;
+				}
 				long timestamp = Long.parseLong(msgArr[2]) * 1000; //Converting to milliseconds
 
 				DataPoint dp;
@@ -192,6 +207,16 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 
 		// Bind and start to accept incoming connections.
 		m_serverBootstrap.bind(new InetSocketAddress(m_address, m_port));
+
+
+		m_udpBootstrap = new ConnectionlessBootstrap(
+				new NioDatagramChannelFactory());
+
+		m_udpBootstrap.setOption("receiveBufferSizePredictorFactory", new FixedReceiveBufferSizePredictorFactory(m_maxSize));
+
+		m_udpBootstrap.setPipelineFactory(this);
+
+		m_udpBootstrap.bind(new InetSocketAddress(m_port));
 	}
 
 	@Override
@@ -199,6 +224,9 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 	{
 		if (m_serverBootstrap != null)
 			m_serverBootstrap.shutdown();
+
+		if (m_udpBootstrap != null)
+			m_udpBootstrap.shutdown();
 	}
 
 }

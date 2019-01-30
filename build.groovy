@@ -19,9 +19,11 @@ import tablesaw.addons.java.JarRule
 import tablesaw.addons.java.JavaCRule
 import tablesaw.addons.java.JavaProgram
 import tablesaw.addons.junit.JUnitRule
+import tablesaw.definitions.Definition
 import tablesaw.rules.DirectoryRule
 import tablesaw.rules.Rule
 import tablesaw.rules.SimpleRule
+import tablesaw.rules.CopyRule
 
 import javax.swing.*
 
@@ -188,7 +190,7 @@ def doIvyResolve(Rule rule)
 
 libFileSets = [
 		new RegExFileSet("build/jar", ".*\\.jar"),
-		new RegExFileSet("lib", ".*\\.jar"),
+		//new RegExFileSet("lib", ".*\\.jar"),
 		ivyFileSet
 	]
 
@@ -199,6 +201,7 @@ zipLibDir = "kairosdb/lib"
 zipConfDir = "kairosdb/conf"
 tarRule = new TarRule("build/${programName}-${version}.tar")
 		.addDepend(jp.getJarRule())
+		.addDepend(resolveIvyFileSetRule)
 		.addFileTo(zipConfDir, "src/main/resources", "kairos-carbon.properties")
 
 for (AbstractFileSet fs in libFileSets)
@@ -301,5 +304,54 @@ def doDeb(Rule rule)
 	}
 }
 
+installDir = saw.getProperty("kairos_home")
+
+deployConfig = new CopyRule()
+		.addFile("src/main/resources/kairos-carbon.properties")
+		.setDestination(installDir + "/conf")
+
+deployRule = new CopyRule("deploy").setDescription("Deploy to karios install")
+		.addDepend(resolveIvyFileSetRule)
+		.addDepend(jp.getJarRule())
+		.addDepend(deployConfig)
+		.setDestination(installDir + "/lib")
+
+for (AbstractFileSet fs in libFileSets)
+	deployRule.addFileSet(fs)
+
 
 saw.setDefaultTarget("jar")
+
+
+//------------------------------------------------------------------------------
+//Build notification
+def printMessage(String title, String message) {
+	osName = saw.getProperty("os.name")
+
+	Definition notifyDef
+	if (osName.startsWith("Linux"))
+	{
+		notifyDef = saw.getDefinition("linux-notify")
+	}
+	else if (osName.startsWith("Mac"))
+	{
+		notifyDef = saw.getDefinition("mac-notify")
+	}
+
+	if (notifyDef != null)
+	{
+		notifyDef.set("title", title)
+		notifyDef.set("message", message)
+		saw.exec(notifyDef.getCommand())
+	}
+}
+
+def buildFailure(Exception e)
+{
+	printMessage("Build Failure", e.getMessage())
+}
+
+def buildSuccess(String target)
+{
+	printMessage("Build Success", target)
+}

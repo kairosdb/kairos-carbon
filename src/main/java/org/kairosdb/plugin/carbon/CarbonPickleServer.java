@@ -2,6 +2,7 @@ package org.kairosdb.plugin.carbon;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
@@ -58,6 +59,7 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	private final Publisher<DataPointEvent> m_publisher;
 	private final TagParser m_tagParser;
 	private ServerBootstrap m_serverBootstrap;
+	private ConnectionlessBootstrap m_udpBootstrap;
 
 	public CarbonPickleServer(FilterEventBus eventBus, TagParser tagParser)
 	{
@@ -101,13 +103,10 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	public void messageReceived(final ChannelHandlerContext ctx,
 			final MessageEvent msgevent)
 	{
-		logger.info("Message received");
 		if (msgevent.getMessage() instanceof List)
 		{
-			logger.info("yup list");
 			for (Object o : (List) msgevent.getMessage())
 			{
-				logger.info("verify pickle");
 				//todo verify cast
 				PickleMetric metric = (PickleMetric)o;
 
@@ -160,6 +159,16 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 		// Bind and start to accept incoming connections.
 		m_serverBootstrap.bind(new InetSocketAddress(m_address, m_port));
 
+
+		m_udpBootstrap = new ConnectionlessBootstrap(
+				new NioDatagramChannelFactory());
+
+		m_udpBootstrap.setOption("receiveBufferSizePredictorFactory", new FixedReceiveBufferSizePredictorFactory(m_maxSize));
+
+		m_udpBootstrap.setPipelineFactory(this);
+
+		m_udpBootstrap.bind(new InetSocketAddress(m_port));
+
 	}
 
 	@Override
@@ -167,6 +176,9 @@ public class CarbonPickleServer extends SimpleChannelUpstreamHandler implements 
 	{
 		if (m_serverBootstrap != null)
 			m_serverBootstrap.shutdown();
+
+		if (m_udpBootstrap != null)
+			m_udpBootstrap.shutdown();
 	}
 
 	@Override

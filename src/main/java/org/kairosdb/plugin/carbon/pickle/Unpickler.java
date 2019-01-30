@@ -21,7 +21,7 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 	private boolean is_tuple = false;
 
 	@Override
-	protected void dispatch(short key) throws IOException
+	protected Object dispatch(short key) throws IOException
 	{
 		if (key == Opcodes.TUPLE2)
 		{
@@ -51,7 +51,7 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 			tupleOpcodeCounter++;
 			if(tupleOpcodeCounter%2 == 0){
 				tupleOpcodeCounter =0 ;
-				return ;
+				return NO_RETURN_VALUE;
 			}
 
 			//Pop three items from stack
@@ -87,7 +87,8 @@ public class Unpickler extends net.razorvine.pickle.Unpickler
 
 		}
 		else
-			super.dispatch(key);
+			return super.dispatch(key);
 
+		return NO_RETURN_VALUE;
 	}
 }

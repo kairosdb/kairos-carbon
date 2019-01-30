@@ -10,7 +10,10 @@
 		<dependency org="org.kairosdb" name="kairosdb" rev="1.2.1-1" conf="provided->default" />
 		<!--<dependency org="com.sun.jersey" name="jersey-servlet" rev="1.15" transitive="false"/>-->
 
-		<!--<dependency org="net.razorvine" name="pyrolite" rev="4.12" />-->
+		 <dependency org="net.razorvine" name="pyrolite" rev="4.22">
+			 <artifact name="pyrolite" type="jar"/>
+			 <exclude org="net.razorvine" name="serpent"/>
+		 </dependency>
 
 		<dependency org="junit" name="junit" rev="4.11" conf="test->default" />
 		<dependency org="org.mockito" name="mockito-core" rev="1.9.5" conf="test->default"/>
