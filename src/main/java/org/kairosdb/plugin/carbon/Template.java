@@ -36,7 +36,8 @@ public class Template
 						if (separators.size() < 2) { separators.add(separators.get(0)); }
 						this.sourceSeparator = separators.get(0);
 						this.targetSeparator = separators.get(1);
-					} else if (part.matches("^(?:\\w+=\\w+,?)*(?:\\w+=\\w+)$")) {
+					} //parse out tags to be added to metric
+					else if (part.matches("^(?:\\w+=\\w+,?)*(?:\\w+=\\w+)$")) {
 						List<String> tags = Arrays.asList(part.split(","));
 						for (String tag : tags) {
 							List<String> tagParts = Arrays.asList(tag.split("="));

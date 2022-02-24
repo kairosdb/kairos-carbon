@@ -7,8 +7,6 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.handler.codec.frame.LineBasedFrameDecoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -112,14 +111,14 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 			final MessageEvent msgevent)
 	{
 		final Object message = msgevent.getMessage();
-		if (message instanceof String[])
+		if (message instanceof List)
 		{
 			try
 			{
-				String[] msgArr = (String[])message;
+				List<String> msgArr = (List<String>) message;
 
 				//TODO: Validate data
-				CarbonMetric carbonMetric = m_tagParser.parseMetricName(msgArr[0]);
+				CarbonMetric carbonMetric = m_tagParser.parseMetricName(msgArr.get(0));
 
 				//Bail out if no data point set is returned
 				if (carbonMetric == null)
@@ -128,34 +127,34 @@ public class CarbonTextServer extends SimpleChannelUpstreamHandler implements Ch
 				//validate dps has at least one tag
 				if (carbonMetric.getTags().size() == 0)
 				{
-					logger.warn("Metric "+msgArr[0]+" is missing a tag");
+					logger.warn("Metric "+msgArr.get(0)+" is missing a tag");
 					return;
 				}
 
-				if ("NaN".equalsIgnoreCase(msgArr[2]))
+				if ("NaN".equalsIgnoreCase(msgArr.get(2)))
 				{
-					logger.info("Metric {} has a timetamp of 'NaN'.  Not sending to Kairos", msgArr[0]);
+					logger.info("Metric {} has a timetamp of 'NaN'.  Not sending to Kairos", msgArr.get(0));
 					return;
 				}
-				long timestamp = Long.parseLong(msgArr[2]) * 1000; //Converting to milliseconds
+				long timestamp = Long.parseLong(msgArr.get(2)) * 1000; //Converting to milliseconds
 
 				DataPoint dp;
-				if ("NaN".equalsIgnoreCase(msgArr[1]))
+				if ("NaN".equalsIgnoreCase(msgArr.get(1)))
 				{
-					logger.info("Metric {} has a value of 'NaN'.  Not sending to Kairos", msgArr[0]);
+					logger.info("Metric {} has a value of 'NaN'.  Not sending to Kairos", msgArr.get(0));
 					return;
 				}
 
-				if (msgArr[1].toLowerCase().contains("infinity"))
+				if (msgArr.get(1).toLowerCase().contains("infinity"))
 				{
-					logger.info("Metric {} has a value of Infinity/-Infinity.  Not sending to Kairos", msgArr[0]);
+					logger.info("Metric {} has a value of Infinity/-Infinity.  Not sending to Kairos", msgArr.get(0));
 					return;
 				}
 
-				if (msgArr[1].contains("."))
-					dp = m_doubleDataPointFactory.createDataPoint(timestamp, Double.parseDouble(msgArr[1]));
+				if (msgArr.get(1).contains("."))
+					dp = m_doubleDataPointFactory.createDataPoint(timestamp, Double.parseDouble(msgArr.get(1)));
 				else
-					dp = m_longDataPointFactory.createDataPoint(timestamp, Long.parseLong(msgArr[1]));
+					dp = m_longDataPointFactory.createDataPoint(timestamp, Long.parseLong(msgArr.get(1)));
 
 				m_publisher.post(new DataPointEvent(carbonMetric.getName(), carbonMetric.getTags(), dp, carbonMetric.getTtl()));
 			}

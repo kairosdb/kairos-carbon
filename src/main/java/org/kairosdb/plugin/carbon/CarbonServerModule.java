@@ -2,6 +2,7 @@ package org.kairosdb.plugin.carbon;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import org.kairosdb.core.KairosRootConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +18,10 @@ import java.util.Properties;
 public class CarbonServerModule extends AbstractModule
 {
 	public static final Logger logger = LoggerFactory.getLogger(CarbonServerModule.class);
-	public static final String TAG_PARSER_PROPERTY = "kairosdb.carbon.tagparser";
-	private Properties m_properties;
+	public static final String TAG_PARSER_PROPERTY = "kairosdb.carbon.tag_parser";
+	private KairosRootConfig m_properties;
 
-	public CarbonServerModule(Properties props)
+	public CarbonServerModule(KairosRootConfig props)
 	{
 		m_properties = props;
 	}

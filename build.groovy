@@ -33,8 +33,8 @@ saw.setProperty(Tablesaw.PROP_MULTI_THREAD_OUTPUT, Tablesaw.PROP_VALUE_ON)
 
 programName = "kairos-carbon"
 //Do not use '-' in version string, it breaks rpm uninstall.
-version = "1.3"
-kairos_version = "1.2.1"
+version = "1.4"
+kairos_version = "1.3.0"
 release = "1" //package release number
 summary = "Kairos-carbon"
 description = """\
@@ -79,7 +79,7 @@ jc.addDepend(ivy.getResolveRule("provided"))
 jc.getDefinition().set("target", "1.8")
 jc.getDefinition().set("source", "1.8")
 
-jp.getJarRule().addFiles("src/main/resources", "kairos-carbon.properties")
+jp.getJarRule().addFiles("src/main/resources", "kairos-carbon.conf")
 
 
 pomRule = ivy.createPomRule("build/jar/pom.xml", ivy.getResolveRule("default"))
@@ -202,7 +202,7 @@ zipConfDir = "kairosdb/conf"
 tarRule = new TarRule("build/${programName}-${version}.tar")
 		.addDepend(jp.getJarRule())
 		.addDepend(resolveIvyFileSetRule)
-		.addFileTo(zipConfDir, "src/main/resources", "kairos-carbon.properties")
+		.addFileTo(zipConfDir, "src/main/resources", "kairos-carbon.conf")
 
 for (AbstractFileSet fs in libFileSets)
 	tarRule.addFileSetTo(zipLibDir, fs)
@@ -254,8 +254,8 @@ def doRPM(Rule rule)
 		addFileSetToRPM(rpmBuilder, "$rpmBaseInstallDir/lib", fs)
 
 
-	rpmBuilder.addFile("$rpmBaseInstallDir/conf/kairos-carbon.properties",
-			new File("src/main/resources/kairos-carbon.properties"), 0644, new Directive(Directive.RPMFILE_CONFIG | Directive.RPMFILE_NOREPLACE))
+	rpmBuilder.addFile("$rpmBaseInstallDir/conf/kairos-carbon.conf",
+			new File("src/main/resources/kairos-carbon.conf"), 0644, new Directive(Directive.RPMFILE_CONFIG | Directive.RPMFILE_NOREPLACE))
 
 	println("Building RPM "+rule.getTarget())
 	outputFile = new FileOutputStream(rule.getTarget())
@@ -307,7 +307,7 @@ def doDeb(Rule rule)
 installDir = saw.getProperty("kairos_home")
 
 deployConfig = new CopyRule()
-		.addFile("src/main/resources/kairos-carbon.properties")
+		.addFile("src/main/resources/kairos-carbon.conf")
 		.setDestination(installDir + "/conf")
 
 deployRule = new CopyRule("deploy").setDescription("Deploy to karios install")

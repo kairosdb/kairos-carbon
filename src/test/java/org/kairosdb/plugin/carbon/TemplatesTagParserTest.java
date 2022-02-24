@@ -28,6 +28,8 @@ import org.kairosdb.events.DataPointEvent;
 import org.kairosdb.util.Tags;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -38,7 +40,7 @@ public class TemplatesTagParserTest
 	private Publisher<DataPointEvent> m_publisher;
 	private CarbonTextServer m_server;
 	private CarbonClient m_client;
-	private String m_templates;
+	private List<String> m_templates;
 
 	@Before
 	public void setupDatastore() throws KairosDBException, IOException
@@ -47,10 +49,10 @@ public class TemplatesTagParserTest
 		FilterEventBus eventBus = mock(FilterEventBus.class);
 		when(eventBus.createPublisher(DataPointEvent.class)).thenReturn(m_publisher);
 
-		m_templates =
-			"^test.metric .metric.host.metric*;" +
-			"^test2.metric .metric.host.metric* [.,_];" +
-			"^test3.metric .metric.host.metric* type=static";
+		m_templates = Arrays.asList(
+			"^test.foo .metric.host.metric*",
+			"^test2.foo .metric.host.metric* [.,_]",
+			"^test3.foo .metric.host.metric* type=static");
 
 		TemplatesTagParser templatesTagParser = new TemplatesTagParser(m_templates);
 
@@ -72,14 +74,14 @@ public class TemplatesTagParserTest
 	{
 		long now = System.currentTimeMillis() / 1000;
 
-		m_client.sendText("test.metric.host_name.name", now, "1234");
+		m_client.sendText("test.foo.host_name.name.bar", now, "1234");
 
 		ImmutableSortedMap<String, String> tags = Tags.create()
 				.put("host", "host_name")
 				.build();
 
 		verify(m_publisher, timeout(5000).times(1))
-				.post(new DataPointEvent("metric.name", tags,
+				.post(new DataPointEvent("foo.name.bar", tags,
 						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
@@ -88,14 +90,14 @@ public class TemplatesTagParserTest
 	{
 		long now = System.currentTimeMillis() / 1000;
 
-		m_client.sendText("test2.metric.host_name.name", now, "1234");
+		m_client.sendText("test2.foo.host_name.name", now, "1234");
 
 		ImmutableSortedMap<String, String> tags = Tags.create()
 				.put("host", "host_name")
 				.build();
 
 		verify(m_publisher, timeout(5000).times(1))
-				.post(new DataPointEvent("metric_name", tags,
+				.post(new DataPointEvent("foo_name", tags,
 						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
@@ -104,7 +106,7 @@ public class TemplatesTagParserTest
 	{
 		long now = System.currentTimeMillis() / 1000;
 
-		m_client.sendText("test3.metric.host_name.name", now, "1234");
+		m_client.sendText("test3.foo.host_name.name", now, "1234");
 
 		ImmutableSortedMap<String, String> tags = Tags.create()
 				.put("host", "host_name")
@@ -112,7 +114,7 @@ public class TemplatesTagParserTest
 				.build();
 
 		verify(m_publisher, timeout(5000).times(1))
-				.post(new DataPointEvent("metric.name", tags,
+				.post(new DataPointEvent("foo.name", tags,
 						new LongDataPoint(now * 1000, 1234), 0));
 	}
 
@@ -121,11 +123,11 @@ public class TemplatesTagParserTest
 	{
 		long now = System.currentTimeMillis() / 1000;
 
-		m_client.sendText("metric.host_name.name", now, "1234");
+		m_client.sendText("foo.host_name.name", now, "1234");
 
 		ImmutableSortedMap<String, String> tags = Tags.create()
 				.put("cause", "no matching template")
-				.put("metricName", "metric.host_name.name")
+				.put("metricName", "foo.host_name.name")
 				.build();
 
 		verify(m_publisher, timeout(5000).times(1))
@@ -138,12 +140,12 @@ public class TemplatesTagParserTest
 	{
 		long now = System.currentTimeMillis() / 1000;
 
-		m_client.sendText("test.metric.host_name", now, "1234");
+		m_client.sendText("test.foo.host_name", now, "1234");
 
 		ImmutableSortedMap<String, String> tags = Tags.create()
 				.put("cause", "does not match metric name pattern")
-				.put("metricName", "test.metric.host_name")
-				.put("templateFilter", "^test.metric")
+				.put("metricName", "test.foo.host_name")
+				.put("templateFilter", "^test.foo")
 				.build();
 
 		verify(m_publisher, timeout(5000).times(1))

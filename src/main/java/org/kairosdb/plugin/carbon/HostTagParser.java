@@ -15,10 +15,10 @@ import java.util.regex.Matcher;
  */
 public class HostTagParser implements TagParser
 {
-	public static final String HOST_PATTERN_PROP = "kairosdb.carbon.hosttagparser.host_pattern";
-	public static final String HOST_REPLACEMENT_PROP = "kairosdb.carbon.hosttagparser.host_replacement";
-	public static final String METRIC_PATTERN_PROP = "kairosdb.carbon.hosttagparser.metric_pattern";
-	public static final String METRIC_REPLACEMENT_PROP = "kairosdb.carbon.hosttagparser.metric_replacement";
+	public static final String HOST_PATTERN_PROP = "kairosdb.carbon.host_tag_parser.host_pattern";
+	public static final String HOST_REPLACEMENT_PROP = "kairosdb.carbon.host_tag_parser.host_replacement";
+	public static final String METRIC_PATTERN_PROP = "kairosdb.carbon.host_tag_parser.metric_pattern";
+	public static final String METRIC_REPLACEMENT_PROP = "kairosdb.carbon.host_tag_parser.metric_replacement";
 
 	private Pattern m_hostPattern;
 	private String m_hostReplacement;
